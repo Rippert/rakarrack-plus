@@ -37,7 +37,7 @@ void DelayFileWindowGui::cb_Save(RKR_Button* o, void* v) {
 void DelayFileWindowGui::cb_new_button_i(RKR_Button*, void*) {
   m_file_size = 0;
 dly_filter->value("1.0");
-dly_delay->value(1);
+dly_delay->value("1.0");
 dly_Q_mode->value(0);
 dly_scroll->clear();
 add_button->do_callback();
@@ -123,7 +123,7 @@ this->when(FL_WHEN_RELEASE);
   o->set_label_offset(4);
   o->set_text_offset(4);
 } // RKR_Float_Input* dly_filter
-{ RKR_Value_Input* o = dly_delay = new RKR_Value_Input(90, 25, 45, 25, "Delay");
+{ RKR_Float_Input* o = dly_delay = new RKR_Float_Input(90, 25, 45, 25, "Delay");
   dly_delay->box(FL_DOWN_BOX);
   dly_delay->color(FL_BACKGROUND2_COLOR);
   dly_delay->selection_color(FL_SELECTION_COLOR);
@@ -131,15 +131,12 @@ this->when(FL_WHEN_RELEASE);
   dly_delay->labelfont(0);
   dly_delay->labelsize(14);
   dly_delay->labelcolor(FL_BACKGROUND2_COLOR);
-  dly_delay->maximum(100);
-  dly_delay->step(0.1);
-  dly_delay->value(1);
   dly_delay->textcolor(FL_BACKGROUND2_COLOR);
   dly_delay->align(Fl_Align(FL_ALIGN_TOP));
   dly_delay->when(FL_WHEN_CHANGED);
   o->set_label_offset(4);
   o->set_text_offset(4);
-} // RKR_Value_Input* dly_delay
+} // RKR_Float_Input* dly_delay
 { RKR_Box* o = new RKR_Box(156, 8, 35, 17, "Mode");
   o->box(FL_NO_BOX);
   o->color(FL_BACKGROUND_COLOR);
@@ -310,12 +307,17 @@ void DelayFileWindowGui::load_delay_file(DlyFile delay_file) {
     m_file_size = 0;
     
       std::ostringstream ss;
+      std::string f_string;
+      
       ss << delay_file.subdiv_fmod;
-      std::string f_string(ss.str());
-  
+      f_string = ss.str();
       dly_filter->value(f_string.c_str());
     
-      dly_delay->value(delay_file.subdiv_dmod);
+      ss << delay_file.subdiv_dmod;
+      f_string = ss.str();
+      dly_delay->value(f_string.c_str());
+      
+      
       dly_Q_mode->value(delay_file.f_qmode);
       
       for(int i = 0; i < delay_file.fLength; ++i)
@@ -379,9 +381,8 @@ void DelayFileWindowGui::save_delay_file(char *filename) {
       
       //General
       memset(buf, 0, sizeof (buf));
-
-      // FIXME
-      sprintf(buf, "%s\t%f\t%d\n",dly_filter->value(), delay_file.subdiv_dmod, delay_file.f_qmode);
+      sprintf(buf, "%s\t%s\t%d\n",dly_filter->value(), dly_delay->value(), delay_file.f_qmode);
+  //    sprintf(buf, "%f\t%f\t%d\n",delay_file.subdiv_fmod, delay_file.subdiv_dmod, delay_file.f_qmode);
       fputs(buf, fn);
       
       for(int i = 0; i < m_file_size; ++i)
@@ -413,10 +414,13 @@ DlyFile DelayFileWindowGui::get_current_settings() {
     strcpy(delay_file.Filename, this->label());
     delay_file.fLength = (float)m_file_size;
     
-    // FIXME
     delay_file.subdiv_fmod = (double) strtod(dly_filter->value(), NULL);
+    delay_file.subdiv_dmod = (double) strtod(dly_delay->value(), NULL);  
     
-    delay_file.subdiv_dmod = dly_delay->value();
+  //  std::string flt_to_str(dly_filter->value());    
+  //  delay_file.subdiv_fmod = std::stof(flt_to_str);
+  //  delay_file.subdiv_dmod = dly_delay->value();
+  
     delay_file.f_qmode = dly_Q_mode->value();
     
     for(int i = 0; i < m_file_size; ++i)

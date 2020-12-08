@@ -55,7 +55,7 @@ public:
   DelayFileWindowGui();
   Fl_Box *Fondo13;
   RKR_Float_Input *dly_filter;
-  RKR_Value_Input *dly_delay;
+  RKR_Float_Input *dly_delay;
   RKR_Button *dly_Q_mode;
 private:
   inline void cb_Load_i(RKR_Button*, void*);

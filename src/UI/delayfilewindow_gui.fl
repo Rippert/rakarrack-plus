@@ -68,7 +68,7 @@ decl {enum
 }
 
 widget_class DelayFileWindowGui {open
-  xywh {43 707 800 265} type Double resizable
+  xywh {276 723 800 265} type Double resizable
   code0 {this->m_rkr = NULL;
 this->m_rgui = NULL;}
   class Fl_Double_Window visible
@@ -83,15 +83,15 @@ this->m_rgui = NULL;}
     code1 {o->set_text_offset(4);}
     class RKR_Float_Input
   }
-  Fl_Value_Input dly_delay {
+  Fl_Input dly_delay {
     label Delay
-    xywh {90 25 45 25} labelcolor 7 align 1 maximum 100 step 0.1 value 1 textcolor 7
+    xywh {90 25 45 25} labelcolor 7 align 1 when 1 textcolor 7
     code0 {o->set_label_offset(4);}
     code1 {o->set_text_offset(4);}
-    class RKR_Value_Input
+    class RKR_Float_Input
   }
   Fl_Box {} {
-    label Mode selected
+    label Mode
     xywh {156 8 35 17}
     code0 {o->set_label_offset(4);}
     class RKR_Box
@@ -138,7 +138,7 @@ this->copy_label(filename);}
     label New
     callback {m_file_size = 0;
 dly_filter->value("1.0");
-dly_delay->value(1);
+dly_delay->value("1.0");
 dly_Q_mode->value(0);
 dly_scroll->clear();
 add_button->do_callback();
@@ -227,12 +227,17 @@ this->copy_label(DEFAULT_DLY_FILE_NAME);} {}
   m_file_size = 0;
   
     std::ostringstream ss;
+    std::string f_string;
+    
     ss << delay_file.subdiv_fmod;
-    std::string f_string(ss.str());
-
+    f_string = ss.str();
     dly_filter->value(f_string.c_str());
   
-    dly_delay->value(delay_file.subdiv_dmod);
+    ss << delay_file.subdiv_dmod;
+    f_string = ss.str();
+    dly_delay->value(f_string.c_str());
+    
+    
     dly_Q_mode->value(delay_file.f_qmode);
     
     for(int i = 0; i < delay_file.fLength; ++i)
@@ -293,9 +298,10 @@ this->redraw();} {}
         return;
     }
     
-        //General
+    //General
     memset(buf, 0, sizeof (buf));
-    sprintf(buf, "%f\\t%f\\t%d\\n",delay_file.subdiv_fmod, delay_file.subdiv_dmod, delay_file.f_qmode);
+    sprintf(buf, "%s\\t%s\\t%d\\n",dly_filter->value(), dly_delay->value(), delay_file.f_qmode);
+//    sprintf(buf, "%f\\t%f\\t%d\\n",delay_file.subdiv_fmod, delay_file.subdiv_dmod, delay_file.f_qmode);
     fputs(buf, fn);
     
     for(int i = 0; i < m_file_size; ++i)
@@ -318,7 +324,8 @@ this->redraw();} {}
         fputs(buf, fn);
     }
     
-    fclose(fn);} {}
+    fclose(fn);} {selected
+    }
   }
   Function {get_current_settings()} {private return_type DlyFile
   } {
@@ -327,11 +334,13 @@ this->redraw();} {}
   strcpy(delay_file.Filename, this->label());
   delay_file.fLength = (float)m_file_size;
   
-  std::string flt_to_str(dly_filter->value());
-    
-  delay_file.subdiv_fmod = std::stof(flt_to_str);
+  delay_file.subdiv_fmod = (double) strtod(dly_filter->value(), NULL);
+  delay_file.subdiv_dmod = (double) strtod(dly_delay->value(), NULL);  
   
-  delay_file.subdiv_dmod = dly_delay->value();
+//  std::string flt_to_str(dly_filter->value());    
+//  delay_file.subdiv_fmod = std::stof(flt_to_str);
+//  delay_file.subdiv_dmod = dly_delay->value();
+
   delay_file.f_qmode = dly_Q_mode->value();
   
   for(int i = 0; i < m_file_size; ++i)
@@ -482,7 +491,7 @@ vector_delay_line = vector_temp;} {}
 
 widget_class dlyFileGroup {
   user_data c_delay_group open
-  xywh {264 598 725 30} type Double
+  xywh {1047 928 725 30} type Double
   class RKR_Group visible position_relative
 } {
   decl {DelayFileWindowGui *m_parent;} {private local
